@@ -64,6 +64,16 @@ async function run() {
             res.send(result)
         })
 
+        // orderCollection  order get api by id
+
+        app.get('/orderid/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectID(id) };
+            const result = await orderCollection.findOne(query);
+            res.send(result);
+        })
+
+
     }
     finally {
 
