@@ -105,9 +105,29 @@ async function run() {
 
             // const result = await paymentCollection.insertOne(updateDoc)
             const updatePayment = await orderCollection.updateOne(filter, updateDoc)
-            console.log(updatePayment)
+            // console.log(updatePayment)
             res.send(updateDoc);
         })
+
+
+        //orderCollection payment update api
+
+
+        app.delete('/order/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectID(id) };
+            const result = await orderCollection.deleteOne(filter);
+            console.log(result);
+            res.send(result);
+        })
+
+
+
+
+
+
+
+
 
 
 
