@@ -21,6 +21,7 @@ async function run() {
 
         await client.connect();
         const itemsCollection = client.db('parts_manufacturer').collection('items');
+        const orderCollection = client.db('parts_manufacturer').collection('order');
 
 
         //ItemCollection's items all products get API
@@ -41,6 +42,16 @@ async function run() {
         })
 
 
+
+        //---------------------------------------
+
+        // orderCollection post api 
+
+        app.post('/order', async (req, res) => {
+            const data = req.body;
+            const result = await orderCollection.insertOne(data);
+            res.send(result);
+        })
 
     }
     finally {
