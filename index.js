@@ -24,6 +24,7 @@ async function run() {
         const itemsCollection = client.db('parts_manufacturer').collection('items');
         const orderCollection = client.db('parts_manufacturer').collection('order');
         const paymentCollection = client.db('parts_manufacturer').collection('payment');
+        const reviewCollection = client.db('parts_manufacturer').collection('reviews');
 
 
         //payment intent
@@ -117,12 +118,26 @@ async function run() {
             const id = req.params.id;
             const filter = { _id: ObjectID(id) };
             const result = await orderCollection.deleteOne(filter);
-            console.log(result);
+            // console.log(result);
             res.send(result);
         })
 
 
 
+        //reviewCollection review post api
+
+        app.post('/review', async (req, res) => {
+            const data = req.body;
+            const result = await reviewCollection.insertOne(data);
+            res.send(result);
+        })
+
+        //reviewCollection review post api
+
+        app.get('/reviews', async (req, res) => {
+            const result = await reviewCollection.find({}).toArray();
+            res.send(result);
+        })
 
 
 
