@@ -37,7 +37,7 @@ async function run() {
             const id = req.params.id;
             const query = { _id: ObjectID(id) }
             const result = await itemsCollection.findOne(query);
-            console.log(result)
+            // console.log(result)
             res.send(result)
         })
 
@@ -51,6 +51,17 @@ async function run() {
             const data = req.body;
             const result = await orderCollection.insertOne(data);
             res.send(result);
+        })
+
+
+        // orderCollection user order get api 
+
+        app.get('/userorder', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email }
+            const result = await orderCollection.find(query).toArray();
+            console.log(result);
+            res.send(result)
         })
 
     }
