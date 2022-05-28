@@ -124,20 +124,6 @@ async function run() {
 
 
 
-        //reviewCollection review post api
-
-        app.post('/review', async (req, res) => {
-            const data = req.body;
-            const result = await reviewCollection.insertOne(data);
-            res.send(result);
-        })
-
-        //reviewCollection review post api
-
-        app.get('/reviews', async (req, res) => {
-            const result = await reviewCollection.find({}).toArray();
-            res.send(result);
-        })
 
 
 
