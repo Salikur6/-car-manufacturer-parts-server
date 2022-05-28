@@ -5,6 +5,7 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const { ObjectID } = require('bson');
 const app = express();
 const port = process.env.PORT || 5000;
+const jwt = require('jsonwebtoken');
 const stripe = require('stripe')(process.env.STRIPE_KEY);
 
 app.use(cors());
@@ -25,6 +26,7 @@ async function run() {
         const orderCollection = client.db('parts_manufacturer').collection('order');
         const paymentCollection = client.db('parts_manufacturer').collection('payment');
         const reviewCollection = client.db('parts_manufacturer').collection('reviews');
+        const userCollection = client.db('parts_manufacturer').collection('users');
 
 
         //payment intent
@@ -66,13 +68,8 @@ async function run() {
         })
 
 
-
-
-
-
-
-
         //ItemCollection's items one products get API
+
         app.get('/item/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectID(id) }
@@ -147,7 +144,24 @@ async function run() {
         })
 
 
+        // -----------------
 
+        // userCollection user put api
+
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const body = req.body;
+            const filter = { email };
+            const option = { upsert: true }
+            const updateDoc = {
+                $set: body
+            };
+            const result = await userCollection.updateOne(filter, updateDoc, option);
+
+            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET)
+            // console.log(result)
+            res.send(result, token);
+        })
 
 
 
