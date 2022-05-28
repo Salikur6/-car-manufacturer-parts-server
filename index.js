@@ -18,6 +18,30 @@ app.use(express.json());
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ddhai.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+
+
+const jwtVerify = (req, res, next) => {
+    const authorizatiion = req.headers.authorizatiion;
+    if (!authorizatiion) {
+        res.status(401).send({ message: 'UnAuthorize Access' });
+    }
+    const token = authorizatiion.split(' ')[1];
+
+    jwt.verify(token, process.envACCESS_TOKEN_SECRET, function (err, decoded) {
+        if (err) {
+            return res.status(403).send({ message: 'Forbidden Access' })
+        }
+        req.decoded = decoded;
+        console.log(decoded)
+        next();
+    });
+
+
+}
+
+
+
+
 async function run() {
     try {
 
@@ -43,7 +67,7 @@ async function run() {
         })
 
         //ItemCollection's items all products get API
-        app.get('/items', async (req, res) => {
+        app.get('/items', jwtVerify, async (req, res) => {
             const query = {};
             const result = await itemsCollection.find(query).toArray();
             res.send(result)
@@ -62,7 +86,7 @@ async function run() {
 
         //reviewCollection review post api
 
-        app.get('/reviews', async (req, res) => {
+        app.get('/reviews', jwtVerify, async (req, res) => {
             const result = await reviewCollection.find({}).toArray();
             res.send(result);
         })
@@ -70,7 +94,7 @@ async function run() {
 
         //ItemCollection's items one products get API
 
-        app.get('/item/:id', async (req, res) => {
+        app.get('/item/:id', jwtVerify, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectID(id) }
             const result = await itemsCollection.findOne(query);
@@ -93,17 +117,25 @@ async function run() {
 
         // orderCollection user order get api 
 
-        app.get('/userorder', async (req, res) => {
+        app.get('/userorder', jwtVerify, async (req, res) => {
             const email = req.query.email;
-            const query = { email: email }
-            const result = await orderCollection.find(query).toArray();
-            console.log(result);
-            res.send(result)
+            const decodedEmail = req.decoded.email;
+            if (email === decodedEmail) {
+                const query = { email: email }
+
+                const result = await orderCollection.find(query).toArray();
+                console.log(jwtVerify);
+                res.send(result)
+            }
+            else {
+                return res.status(403).send({ message: 'Forbidden Access' })
+            }
+
         })
 
         // orderCollection  order get api by id
 
-        app.get('/orderid/:id', async (req, res) => {
+        app.get('/orderid/:id', jwtVerify, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectID(id) };
             const result = await orderCollection.findOne(query);
@@ -159,12 +191,9 @@ async function run() {
             const result = await userCollection.updateOne(filter, updateDoc, option);
 
             const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET)
-            // console.log(result)
-            res.send(result, token);
+            // console.log(result, token)
+            res.send({ result, token });
         })
-
-
-
 
 
 
