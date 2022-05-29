@@ -67,7 +67,7 @@ async function run() {
         })
 
         //ItemCollection's items all products get API
-        app.get('/items', jwtVerify, async (req, res) => {
+        app.get('/items', async (req, res) => {
             const query = {};
             const result = await itemsCollection.find(query).toArray();
             res.send(result)
@@ -83,7 +83,7 @@ async function run() {
 
         //reviewCollection review post api
 
-        app.get('/reviews', jwtVerify, async (req, res) => {
+        app.get('/reviews', async (req, res) => {
             const result = await reviewCollection.find({}).toArray();
             res.send(result);
         })
