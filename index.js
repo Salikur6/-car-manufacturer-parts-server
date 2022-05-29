@@ -21,13 +21,15 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 
 const jwtVerify = (req, res, next) => {
-    const authorizatiion = req.headers.authorizatiion;
-    if (!authorizatiion) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
         res.status(401).send({ message: 'UnAuthorize Access' });
     }
-    const token = authorizatiion.split(' ')[1];
+    const token = authHeader.split(' ')[1];
 
-    jwt.verify(token, process.envACCESS_TOKEN_SECRET, function (err, decoded) {
+    console.log(authHeader)
+
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
         if (err) {
             return res.status(403).send({ message: 'Forbidden Access' })
         }
@@ -38,8 +40,6 @@ const jwtVerify = (req, res, next) => {
 
 
 }
-
-
 
 
 async function run() {
@@ -55,7 +55,7 @@ async function run() {
 
         //payment intent
 
-        app.post('/create-payment-intent', async (req, res) => {
+        app.post('/create-payment-intent', jwtVerify, async (req, res) => {
             const { totalPrice } = req.body;
             const amount = totalPrice * 100;
             const paymentIntent = await stripe.paymentIntents.create({
@@ -72,9 +72,6 @@ async function run() {
             const result = await itemsCollection.find(query).toArray();
             res.send(result)
         })
-
-
-
 
         //reviewCollection review post api
 
@@ -120,12 +117,13 @@ async function run() {
         app.get('/userorder', jwtVerify, async (req, res) => {
             const email = req.query.email;
             const decodedEmail = req.decoded.email;
+            console.log('decoded', decodedEmail);
             if (email === decodedEmail) {
                 const query = { email: email }
 
                 const result = await orderCollection.find(query).toArray();
-                console.log(jwtVerify);
-                res.send(result)
+                // console.log(jwtVerify);
+                return res.send(result)
             }
             else {
                 return res.status(403).send({ message: 'Forbidden Access' })
@@ -194,6 +192,48 @@ async function run() {
             // console.log(result, token)
             res.send({ result, token });
         })
+
+
+
+        // userCollection get user  api
+        app.get('/users', async (req, res) => {
+            const result = await userCollection.find().toArray();
+            res.send(result);
+        })
+
+
+        // userCollection update user  to admin  api
+        app.put('/user/admin/:email', jwtVerify, async (req, res) => {
+            const email = req.params.email;
+
+            const requaster = req.decoded.email;
+            const reqAccount = await userCollection.findOne({ email: requaster })
+            if (reqAccount.role === 'admin') {
+                const filter = { email: email };
+                const updateDoc = {
+                    $set: { role: 'admin' }
+                }
+                const result = await userCollection.updateOne(filter, updateDoc);
+                res.send(result);
+            }
+            else {
+                return res.status(403).send({ message: 'Forbidden Access' })
+            }
+        })
+
+
+        // userCollection get user  admin api
+
+        app.get('/admin/:email', jwtVerify, async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email };
+            const user = await userCollection.findOne(filter);
+            const isAdmin = user.role === 'admin';
+            console.log(isAdmin)
+            res.send({ admin: isAdmin })
+        })
+
+
 
 
 
