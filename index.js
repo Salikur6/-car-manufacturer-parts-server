@@ -96,6 +96,7 @@ async function run() {
             const query = { _id: ObjectID(id) }
             const result = await itemsCollection.findOne(query);
             // console.log(result)
+            console.log(result)
             res.send(result)
         })
 
