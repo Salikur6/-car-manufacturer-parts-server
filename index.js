@@ -39,6 +39,7 @@ const jwtVerify = (req, res, next) => {
     });
 
 
+
 }
 
 
@@ -122,7 +123,7 @@ async function run() {
             if (email === decodedEmail) {
                 const query = { email: email }
 
-                const result = await orderCollection.find(query).toArray();
+                const result = await orderCollection.find(query).sort({ _id: -1 }).toArray();
                 // console.log(jwtVerify);
                 return res.send(result)
             }
@@ -221,6 +222,40 @@ async function run() {
                 return res.status(403).send({ message: 'Forbidden Access' })
             }
         })
+
+
+        // userCollection update user  to information  api
+
+        app.put('/profile/:email', async (req, res) => {
+            const email = req.params.email;
+            const body = req.body;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: body
+            }
+            const result = await userCollection.updateOne(filter, updateDoc, options);
+
+            console.log(result);
+            res.send(result);
+        })
+
+
+
+        // userCollection get user  to information  api
+
+        app.get('/profileinfo', async (req, res) => {
+            const email = req.query.email;
+            const result = await userCollection.findOne({ email });
+            res.send(result);
+        });
+
+
+
+
+
+
+
 
 
         // userCollection get user  admin api
