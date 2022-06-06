@@ -272,6 +272,24 @@ async function run() {
 
 
 
+        //orderCollection get all order for admin 
+
+        app.get('/manageorders', async (req, res) => {
+            const result = await orderCollection.find().toArray();
+            res.send(result);
+        })
+
+
+        app.put('/manageorders/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectID(id) };
+            const updateDoc = {
+                $set: { shipped: 'true' }
+            };
+            const result = await orderCollection.updateOne(query, updateDoc);
+            res.send(result);
+
+        })
 
 
 
